@@ -3,6 +3,7 @@ const models = require('../models');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+
     await queryInterface.bulkInsert('Boards', [{
       id: 1,
       name: 'dev',
@@ -10,15 +11,11 @@ module.exports = {
       updatedAt: new Date()
     }], {});
 
-    const board = await models.Board.findOne({
-      where: {
-        name: 'dev'
-      }
-    });
+    const board = await models.Board.findAll({});
 
     await queryInterface.bulkInsert('Threads', [
-      { id: 1, threadId: 1, createdAt: new Date(), updatedAt: new Date(), BoardId: board.id },
-      { id: 2, threadId: 2, createdAt: new Date(), updatedAt: new Date(), BoardId: board.id }], {});
+      { id: 1, createdAt: new Date(), updatedAt: new Date(), BoardId: board[0].id },
+      { id: 2, createdAt: new Date(), updatedAt: new Date(), BoardId: board[0].id }], {});
 
     const threads = await models.Thread.findAll({});
 
@@ -42,7 +39,7 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('Posts', null, {});
     await queryInterface.bulkDelete('Threads', null, {});
-    await queryInterface.bulkDelete('Boards', null, {});
+    return await queryInterface.bulkDelete('Boards', null, {});
     /*
       Add reverting commands here.
       Return a promise to correctly handle asynchronicity.
