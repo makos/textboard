@@ -66,7 +66,17 @@ router.post('/', function (req, res, next) {
 });
 
 /* POST a new thread to board. */
-router.post('/:board', function (req, res, next) {
-})
+router.post('/:board_name', function (req, res, next) {
+    get_board(req.params.board_name).then(matched_board => {
+        if (!matched_board) {
+            res.status(400).end();
+        } else {
+            get_threads(matched_board.id).then(threads => {
+                console.log(threads[threads.length - 1]);
+                res.status(200).end();
+            });
+        }
+    });
+});
 
 module.exports = router;
