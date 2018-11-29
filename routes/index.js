@@ -27,6 +27,15 @@ async function get_threads(board_id) {
     });
 }
 
+function parse_body(req, res, next) {
+    if (!req.body.title || !req.body.body) {
+        console.log("400 Bad Request - no 'title' or 'body' key.");
+        res.status(400).end();
+    } else {
+        next();
+    }
+}
+
 /* GET list of boards - index. */
 router.get('/', function (req, res, next) {
     models.Board.findAll().then(boards => {
@@ -38,6 +47,7 @@ router.get('/', function (req, res, next) {
 router.get('/:board_name', function (req, res, next) {
     get_board(req.params.board_name).then(matched_board => {
         if (!matched_board) {
+            console.log("404 Not Found - board doesn't exist.");
             res.status(404).end();
         } else {
             get_threads(matched_board.id).then(threads => {
@@ -51,6 +61,7 @@ router.get('/:board_name', function (req, res, next) {
 router.get('/:board_name/:thread_id', function (req, res, next) {
     get_board(req.params.board_name).then(matched_board => {
         if (!matched_board) {
+            console.log("404 Not Found - board doesn't exist.");
             res.status(404).end();
         } else {
             get_posts(req.params.thread_id).then(posts => {
@@ -62,17 +73,24 @@ router.get('/:board_name/:thread_id', function (req, res, next) {
 
 /* Try to POST to index page - receive 400 Bad Request error. */
 router.post('/', function (req, res, next) {
+    console.log("400 Bad Request - trying to POST to index page.");
     res.status(400).end();
 });
+
+router.use('/:board_name', parse_body);
 
 /* POST a new thread to board. */
 router.post('/:board_name', function (req, res, next) {
     get_board(req.params.board_name).then(matched_board => {
         if (!matched_board) {
+            console.log("400 Bad Request - specified board doesn't exist.");
             res.status(400).end();
         } else {
             get_threads(matched_board.id).then(threads => {
-                console.log(threads[threads.length - 1]);
+                const new_id = threads.length + 1
+                console.log("Biggest ID is: " + new_id);
+                console.log("Body: ");
+                console.log(req.body);
                 res.status(200).end();
             });
         }
